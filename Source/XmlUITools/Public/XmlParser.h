@@ -32,7 +32,11 @@ public:
 protected:
 	tinyxml2::XMLDocument* OpenXmlFile() const;
 
+	void ParseExtraAttributes(tinyxml2::XMLElement* Node, TMap<FString, FExtraAttribute>& OutExtraAttributes);
+	void TraverseAllChildAttributes(tinyxml2::XMLElement* Node, TSharedRef<FExtraAttribute> OutExtraAttribute);
+
 	void TraverseAllNodes(tinyxml2::XMLElement* Root, const NodeTraverseFuncType& Func);
 	void ForEachChildElements(tinyxml2::XMLElement* Root, const NodeTraverseFuncType& TraverseFunc);
 	
+	static const char* ExtraAttributeXmlKeyword; 
 };

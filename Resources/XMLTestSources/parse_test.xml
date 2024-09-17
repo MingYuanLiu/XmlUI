@@ -1,9 +1,9 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <XmlUmg>
-    <box width="1920" height="1080">
-        <button name="test" padding="0,1,1,0" onClick="onClick">
+    <border width="1920" height="1080">
+        <button name="test" padding="0,1,1,0" on_clicked="onClick" is_focusable="true" color_and_opacity="(1,0,1,0)">
 			Click me
-		</button>
-        <text> hello world </text>
-    </box>
+			<text> hello world </text>
+        </button>
+    </border>
 </XmlUmg>

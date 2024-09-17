@@ -8,6 +8,8 @@
 #include "StringUtils.h"
 #include "Blueprint/WidgetTree.h"
 #include "Blueprint/UserWidget.h"
+#include "PropertySetter/PropertySetter.h"
+#include "PropertySetter/SetterFactory.h"
 
 FWidgetClassTemplate::FWidgetClassTemplate()
 	: WidgetClass(nullptr)
@@ -88,32 +90,48 @@ UWidgetTree* UXmlUmgGenerator::GenerateWidgetTree(UUserWidget* Outer, UXmlUmgTre
 		if (const TSharedPtr<FWidgetClassTemplate>* WidgetTemplate = AllWidgetClasses.Find(Node->WidgetName))
 		{
 			TWeakObjectPtr<UClass> WidgetClass = (*WidgetTemplate)->GetWidgetClass();
-			if (!WidgetClass.IsValid())
-			{
-				
-			}
 
 			UWidget* Widget = (*WidgetTemplate)->Create(WidgetTree);
+			
+			if (!WidgetClass.IsValid())
+			{
+				UE_LOG(LogXmlUmg, Warning, TEXT("Widget class of %s is invalid"), *Node->WidgetName)
+				return Widget;
+			}
 
+			// todo: setup attributes
 			for (const TPair<FString/* property name */, FString/* property value */>& Attr : Node->Attributes)
 			{
 				const FString& Name = Attr.Key;
-				FString Value = Attr.Value;
+				FString Value = Attr.Value.TrimStartAndEnd();
 
 				FName PropertyName = FName(*FStringUtils::ConvertLowercaseLineFormatNameToCamelFormat(Name));
 				if (FProperty* Property = WidgetClass.Get()->FindPropertyByName(PropertyName))
 				{
-					FString TypeName = Property->GetCPPType();
-					Property->SetValue_InContainer(Widget, &Value);
-				}
+					
+					if (XmlUITools::IPropertySetter* Setter = XmlUITools::FSetterFactory::CreateSetter(Property, Value))
+					{
+						if (!Setter->SetValue(Widget, Value))
+						{
+							UE_LOG(LogXmlUmg, Warning, TEXT("Set attribute %s failed"), *Name)
+						}
+						
+						delete Setter;
+					}
+					
+				} 
 			}
+
+			// todo: setup extra attributes
+			// 需要循环遍历extra attributes中的extra attribute，以设置嵌套的属性值；
 			
+			
+			// todo: setup display text
+			
+			
+			return Widget;
 		}
-
-		// todo: setup attributes
-
-		// todo: setup display text
-
+		
 		return nullptr;
 	};
 
@@ -147,7 +165,7 @@ UWidgetTree* UXmlUmgGenerator::GenerateWidgetTree(UUserWidget* Outer, UXmlUmgTre
 				continue;
 			}
 
-			if (!PanelWidget->CanHaveMultipleChildren() && ParentNode->ChildNodes.Num() > 0)
+			if (!PanelWidget->CanHaveMultipleChildren() && ParentNode->ChildNodes.Num() > 1)
 			{
 				UE_LOG(LogXmlUmg, Warning, TEXT("Can not add multiple children nodes for parent widget %s"), *ParentNode->WidgetName)
 				// todo: broadcast error delegate
@@ -202,7 +220,7 @@ void UXmlUmgGenerator::BuildAllWidgetClassList(const UClass* ActiveCurrentClass)
 		}
 		
 		// Convert name to lowercase letter underline format
-		const FString WidgetName = ConvertNameToLowercaseUnderLineFormat(WidgetClass->GetName());
+		const FString WidgetName = FStringUtils::ConvertNameToLowercaseUnderLineFormat(WidgetClass->GetName());
 		
 		if (WidgetClass->IsChildOf(UUserWidget::StaticClass()))
 		{
@@ -214,7 +232,7 @@ void UXmlUmgGenerator::BuildAllWidgetClassList(const UClass* ActiveCurrentClass)
 		}
 	}
 
-	// traverse all blueprint classes
+	// traverse all blueprint widget classes
 
 	
 }
@@ -245,34 +263,4 @@ bool UXmlUmgGenerator::IsUsableWidgetClass(const UClass* WidgetClass)
 		return true;
 	}
 	return false;
-}
-
-FString UXmlUmgGenerator::ConvertNameToLowercaseUnderLineFormat(const FString& ClassName)
-{
-	FString LowercaseName = ClassName;
-	
-	if (ClassName.StartsWith("U"))
-	{
-		LowercaseName.RemoveAt(0);
-	}
-
-	TArray<int32> AllUpperCharPoses;
-	for (int i = 1; i < LowercaseName.Len(); ++i)
-	{
-		if (FChar::IsUpper(LowercaseName[i]))
-		{
-			AllUpperCharPoses.Add(i);
-		}
-	}
-
-	LowercaseName = LowercaseName.ToLower();
-
-	int32 AlreadyInsertNum = 0;
-	for (int32 Pos : AllUpperCharPoses)
-	{
-		LowercaseName.InsertAt(Pos + AlreadyInsertNum, '_');
-		++AlreadyInsertNum;
-	}
-	
-	return LowercaseName;
 }

@@ -5,6 +5,7 @@
 
 #include "LogXmlUmg.h"
 
+const char* UXmlParser::ExtraAttributeXmlKeyword = "xml_extra_attributes";
 
 tinyxml2::XMLDocument* UXmlParser::OpenXmlFile() const
 {
@@ -54,6 +55,8 @@ void UXmlParser::TraverseAllNodes(tinyxml2::XMLElement* Root, const NodeTraverse
 		});
 	}
 }
+
+// todo: parse 'attributes' element in xml file
 
 UXmlUmgTree* UXmlParser::ParseTo()
 {
@@ -111,8 +114,17 @@ UXmlUmgTree* UXmlParser::ParseTo()
 		TPair<tinyxml2::XMLElement*, UXmlUmgNode*> Parent;
 		TraverseQueue.Dequeue(Parent);
 
-		ForEachChildElements(Parent.Key,[&TraverseQueue, GenerateXmlUmgNode, Parent](tinyxml2::XMLElement* Node)
+		ForEachChildElements(Parent.Key,[this, &TraverseQueue, GenerateXmlUmgNode, Parent](tinyxml2::XMLElement* Node)
 		{
+			if (strcmp(Node->Name(), ExtraAttributeXmlKeyword) == 0)
+			{
+				UXmlUmgNode* ParentNode = Parent.Value;
+				TMap<FString, FExtraAttribute> ExtraAttributes;
+				ParseExtraAttributes(Node, ExtraAttributes);
+				ParentNode->ExtraAttributes = ExtraAttributes;
+				return;
+			}
+			
 			UXmlUmgNode* ChildNode = GenerateXmlUmgNode(Node);
 			UXmlUmgNode* ParentNode = Parent.Value;
 			ParentNode->ChildNodes.Add(ChildNode);
@@ -188,4 +200,37 @@ bool UXmlParser::SerializeTo(UXmlUmgTree* UmgTree)
 	}
 
 	return XmlDoc.SaveFile(TCHAR_TO_UTF8(*XmlFilePath)) == 0;
+}
+
+void UXmlParser::ParseExtraAttributes(tinyxml2::XMLElement* Node, TMap<FString, FExtraAttribute>& OutExtraAttributes)
+{
+	if (strcmp(Node->Name(), ExtraAttributeXmlKeyword) != 0)
+	{
+		UE_LOG(LogXmlUmg, Warning, TEXT("Xml extra attribute node must be %hs"), ExtraAttributeXmlKeyword)
+		return;
+	}
+	
+	for (tinyxml2::XMLElement* Element = Node->FirstChildElement(); Element; Element = Element->NextSiblingElement())
+	{
+		FExtraAttribute Result;
+		TraverseAllChildAttributes(Element, MakeShareable(&Result));
+		OutExtraAttributes.Add(UTF8_TO_TCHAR(Element->Name()), Result);
+	}
+}
+
+void UXmlParser::TraverseAllChildAttributes(tinyxml2::XMLElement* Node, TSharedRef<FExtraAttribute> OutExtraAttribute)
+{
+	// add attributes
+	for (const tinyxml2::XMLAttribute* Attr = Node->FirstAttribute(); Attr; Attr = Attr->Next())
+	{
+		OutExtraAttribute->Properties.Add(UTF8_TO_TCHAR(Attr->Name()), UTF8_TO_TCHAR(Attr->Value()));
+	}
+
+	// add child attributes
+	for (tinyxml2::XMLElement* Child = Node->FirstChildElement(); Child; Child = Child->NextSiblingElement())
+	{
+		TSharedRef<FExtraAttribute> ChildAttribute = MakeShared<FExtraAttribute>();
+		TraverseAllChildAttributes(Child, ChildAttribute);
+		OutExtraAttribute->ChildProperties.Add(UTF8_TO_TCHAR(Child->Name()), ChildAttribute);
+	}
 }

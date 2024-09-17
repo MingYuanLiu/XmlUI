@@ -6,6 +6,7 @@
 #include "tinyxml2.h"
 #include "XmlParser.h"
 #include "XmlUmgGenerator.h"
+#include "Blueprint/UserWidget.h"
 
 #define LOCTEXT_NAMESPACE "FXmlUIToolsModule"
 
@@ -53,6 +54,8 @@ void FXmlUIToolsModule::StartupModule()
 
 	UXmlUmgGenerator* Generator = NewObject<UXmlUmgGenerator>();
 	Generator->BuildAllWidgetClassList(nullptr);
+	UUserWidget* UserWidget = NewObject<UUserWidget>();
+	UWidgetTree* WidgetTree = Generator->GenerateWidgetTree(UserWidget, Tree);
 }
 
 void FXmlUIToolsModule::ShutdownModule()

@@ -7,6 +7,17 @@
 
 #include "XmlUmgTree.generated.h"
 
+
+USTRUCT(BlueprintType)
+struct FExtraAttribute
+{
+	GENERATED_BODY()
+	
+	TMap<FString, FString> Properties;
+	
+	TMap<FString, TSharedRef<FExtraAttribute>> ChildProperties; 
+};
+
 UCLASS(BlueprintType)
 class UXmlUmgNode : public UObject
 {
@@ -20,6 +31,9 @@ public:
 
 	UPROPERTY(EditAnywhere)
 	TMap<FString, FString> Attributes;
+
+	UPROPERTY(EditAnywhere)
+	TMap<FString, FExtraAttribute> ExtraAttributes; // attributes defined in <attributes></attributes> xml element
 
 	UPROPERTY(EditAnywhere)
 	TArray<UXmlUmgNode*> ChildNodes;
