@@ -118,12 +118,22 @@ UWidgetTree* UXmlUmgGenerator::GenerateWidgetTree(UUserWidget* Outer, UXmlUmgTre
 						
 						delete Setter;
 					}
+
+					FObjectProperty* ObjectProperty = Cast<FObjectProperty>(Property);
+					TArray<FField*> Fields;
+					ObjectProperty->GetInnerFields(Fields);
+					for (FField* Field : Fields)
+					{
+						
+					}
+
 					
 				} 
 			}
 
 			// todo: setup extra attributes
-			// 需要循环遍历extra attributes中的extra attribute，以设置嵌套的属性值；
+			// maybe hard !!!
+			// 需要循环遍历extra attributes中的extra attribute，以设置嵌套的属性值
 			
 			
 			// todo: setup display text
