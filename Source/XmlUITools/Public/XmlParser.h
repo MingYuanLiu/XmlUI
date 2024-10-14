@@ -33,11 +33,17 @@ protected:
 	tinyxml2::XMLDocument* OpenXmlFile() const;
 
 	void ParseExtraProperties(tinyxml2::XMLElement* Node, TMap<FString, FXmlExtraAttribute>& OutExtraAttributes);
-	void TraverseAllChildProperties(tinyxml2::XMLElement* Node, TObjectPtr<FXmlExtraAttribute> OutExtraAttribute);
+	void TraverseAllChildProperties(tinyxml2::XMLElement* Node, FXmlExtraAttribute* OutExtraAttribute);
+	void ParseObjectAttributes(tinyxml2::XMLElement* Node, TMap<FString, FXmlExtraAttribute*>& OutExtraAttributes);
 	bool IsArrayElement(tinyxml2::XMLElement* Node);
 
 	void TraverseAllNodes(tinyxml2::XMLElement* Root, const NodeTraverseFuncType& Func);
 	void ForEachChildElements(tinyxml2::XMLElement* Root, const NodeTraverseFuncType& TraverseFunc);
+
+	FString ReplaceEnterLineAndTrimStart(const FString& InString)
+	{
+		return InString.Replace(TEXT("\n"), TEXT("")).TrimStartAndEnd();
+	}
 	
 	static const char* ExtraAttributeXmlKeyword; 
 };

@@ -18,7 +18,7 @@ enum class EXmlAttributeType : uint8
 	ObjectPtr
 };
 
-USTRUCT()
+USTRUCT(BlueprintType)
 struct FXmlAttribute
 {
 	GENERATED_BODY()
@@ -35,7 +35,11 @@ struct FXmlExtraAttribute
 	
 	TMap<FString/* property name */, FXmlAttribute> Properties;
 	
-	TMap<FString/* struct property name */, TObjectPtr<FXmlExtraAttribute>> ChildProperties;
+	TMap<FString/* struct property name */, FXmlExtraAttribute*> ChildProperties;
+
+	TArray<FXmlAttribute> ArrayProperties;
+
+	TArray<FXmlExtraAttribute> ObjectArrayProperties;
 	
 	EXmlAttributeType Type;
 };

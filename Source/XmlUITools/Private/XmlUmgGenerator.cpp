@@ -100,7 +100,8 @@ UWidgetTree* UXmlUmgGenerator::GenerateWidgetTree(UUserWidget* Outer, UXmlUmgTre
 			}
 
 			// todo: setup attributes
-			for (const TPair<FString/* property name */, FString/* property value */>& Attr : Node->Attributes)
+			/*
+			for (const TPair<FString/* property name #1#, FString/* property value #1#>& Attr : Node->Properties)
 			{
 				const FString& Name = Attr.Key;
 				FString Value = Attr.Value.TrimStartAndEnd();
@@ -130,6 +131,7 @@ UWidgetTree* UXmlUmgGenerator::GenerateWidgetTree(UUserWidget* Outer, UXmlUmgTre
 					
 				} 
 			}
+			*/
 
 			// todo: setup extra attributes
 			// maybe hard !!!

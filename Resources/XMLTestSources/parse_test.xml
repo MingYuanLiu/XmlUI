@@ -2,6 +2,7 @@
 <XmlUmg>
     <border width="1920" height="1080">
         <button name="test" padding="0,1,1,0" on_clicked="onClick" is_focusable="true">
+            Click me
             <XmlProperties>
                 <WidgetStyle>
                     <Normal>
@@ -38,8 +39,6 @@
             </XmlProperties>
             
             <text> hello world </text>
-            
-			Click me
 			
         </button>
     </border>

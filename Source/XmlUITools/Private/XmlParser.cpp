@@ -71,8 +71,12 @@ UXmlUmgTree* UXmlParser::ParseFromXml(FString& Out_FailureReason)
 	UXmlUmgTree* ParsedTree = NewObject<UXmlUmgTree>();
 
 	tinyxml2::XMLElement* StartElement = XmlDoc->RootElement();
-	const char* StartElementName = StartElement->Name();
-	const FString StartName(UTF8_TO_TCHAR(StartElementName));
+	if (StartElement == nullptr)
+	{
+		return nullptr;
+	}
+	
+	const FString StartName(UTF8_TO_TCHAR(StartElement->Name()));
 	if (!StartName.Equals("XmlUmg", ESearchCase::IgnoreCase))
 	{
 		UE_LOG(LogXmlUmg, Warning, TEXT("Can not found root element [xmlumg], xml file must be warpped by <xmlumg></xmlumg> which is case-insensitive."))
@@ -91,11 +95,11 @@ UXmlUmgTree* UXmlParser::ParseFromXml(FString& Out_FailureReason)
 		return nullptr;
 	}
 
-	auto GenerateXmlUmgNode = [](const tinyxml2::XMLElement* Node) -> UXmlUmgNode*
+	auto GenerateXmlUmgNode = [this](const tinyxml2::XMLElement* Node) -> UXmlUmgNode*
 	{
 		UXmlUmgNode* XmlUmgNode = NewObject<UXmlUmgNode>();
 		XmlUmgNode->WidgetName = UTF8_TO_TCHAR(Node->Name());
-		XmlUmgNode->WidgetDisplayText = UTF8_TO_TCHAR(Node->GetText());
+		XmlUmgNode->WidgetDisplayText = ReplaceEnterLineAndTrimStart(UTF8_TO_TCHAR(Node->GetText()));
 		for (const tinyxml2::XMLAttribute* Attr = Node->FirstAttribute(); Attr; Attr = Attr->Next())
 		{
 			FXmlAttribute Attribute;
@@ -162,10 +166,10 @@ bool UXmlParser::SerializeTo(UXmlUmgTree* UmgTree)
 	{
 		tinyxml2::XMLElement* XmlElement = XmlDoc.NewElement(TCHAR_TO_UTF8(*Node->WidgetName));
 
-		for (const auto& Attr : Node->Attributes)
+		for (const auto& Attr : Node->Properties)
 		{
 			const char* Key = TCHAR_TO_UTF8(*Attr.Key);
-			const char* Value = TCHAR_TO_UTF8(*Attr.Value);
+			const char* Value = TCHAR_TO_UTF8(*Attr.Value.Value);
 
 			XmlElement->SetAttribute(Key, Value);
 		}
@@ -213,59 +217,88 @@ void UXmlParser::ParseExtraProperties(tinyxml2::XMLElement* Node, TMap<FString, 
 		UE_LOG(LogXmlUmg, Warning, TEXT("Xml extra attribute node must be %hs"), ExtraAttributeXmlKeyword)
 		return;
 	}
-	
+
+	TMap<FString, FXmlExtraAttribute*> ExtraAttributes;
+	ParseObjectAttributes(Node, ExtraAttributes);
+
+	for (const auto& Item : ExtraAttributes)
+    {
+        OutExtraAttributes.Add(Item.Key, *Item.Value);
+		delete Item.Value;
+    }
+}
+
+void UXmlParser::ParseObjectAttributes(tinyxml2::XMLElement* Node, TMap<FString, FXmlExtraAttribute*>& OutExtraAttributes)
+{
+	if (Node == nullptr)
+	{
+		return;
+	}
+
 	for (tinyxml2::XMLElement* Element = Node->FirstChildElement(); Element; Element = Element->NextSiblingElement())
 	{
+		if (Element == nullptr)
+		{
+			continue;
+		}
+		
+		FXmlExtraAttribute* CurrentElementXmlExtraProperty = new FXmlExtraAttribute();
+		
 		const char* PropertyName = Element->Name();
 		const char* PropertyValue = Element->GetText();
 		const bool bHasChild = Element->ChildElementCount() > 0;
 		const bool bIsArray = IsArrayElement(Element);
-
-		TObjectPtr<FXmlExtraAttribute> CurrentElementXmlExtraProperty = NewObject<FXmlExtraAttribute>();
 		
 		if (!bHasChild && PropertyValue != nullptr)
 		{
 			FXmlAttribute XmlProperty;
-			XmlProperty.Value = UTF8_TO_TCHAR(PropertyValue);
+			XmlProperty.Value = FString(UTF8_TO_TCHAR(PropertyValue)).Replace(TEXT("\n"), TEXT("")).TrimStartAndEnd();
 			XmlProperty.Type = FStringUtils::GetAttributeTypeFromXmlValue(XmlProperty.Value);
 			CurrentElementXmlExtraProperty->Properties.Add(PropertyName, XmlProperty);
 			CurrentElementXmlExtraProperty->Type = XmlProperty.Type;
 		}
 
-		if (bIsArray)
+		if (bHasChild && bIsArray)
 		{
-			
-		}
-		
-		// 
-		if (bHasChild)
-		{
-			TraverseAllChildProperties(Element, CurrentElementXmlExtraProperty);
-			 
+			for (auto* ListElement = Element->FirstChildElement(); ListElement; ListElement = ListElement->NextSiblingElement())
+            {
+				if (strcmp(ListElement->Name(), "List.Element") != 0)
+                {
+                    continue;
+                }
+
+				if (ListElement->ChildElementCount() > 0)
+				{
+					FXmlExtraAttribute CurrentListElementExtraProperty;
+					ParseObjectAttributes(ListElement, CurrentListElementExtraProperty.ChildProperties);
+					CurrentElementXmlExtraProperty->ObjectArrayProperties.Add(CurrentListElementExtraProperty);
+				}
+				else
+				{
+					const char* ElementValue = ListElement->GetText();
+					FXmlAttribute XmlProperty;
+					XmlProperty.Value = FString(UTF8_TO_TCHAR(ElementValue)).Replace(TEXT("\n"), TEXT("")).TrimStartAndEnd();
+					XmlProperty.Type = FStringUtils::GetAttributeTypeFromXmlValue(XmlProperty.Value);
+					CurrentElementXmlExtraProperty->ArrayProperties.Add(XmlProperty);
+				}
+            }
+
+			CurrentElementXmlExtraProperty->Type = EXmlAttributeType::Array;
 		}
 
-		// array
-		
-		auto ElementAttr = *CurrentElementXmlExtraProperty;
-		OutExtraAttributes.Add(UTF8_TO_TCHAR(Element->Name()), ElementAttr);
+		if (bHasChild && !bIsArray)
+		{
+			ParseObjectAttributes(Element, CurrentElementXmlExtraProperty->ChildProperties);
+			CurrentElementXmlExtraProperty->Type = EXmlAttributeType::Object;
+		}
+
+		OutExtraAttributes.Add(UTF8_TO_TCHAR(Element->Name()), CurrentElementXmlExtraProperty);
 	}
 }
 
-void UXmlParser::TraverseAllChildProperties(tinyxml2::XMLElement* Node, TObjectPtr<FXmlExtraAttribute> OutExtraAttribute)
+void UXmlParser::TraverseAllChildProperties(tinyxml2::XMLElement* Node, FXmlExtraAttribute* OutExtraAttribute)
 {
-	// add attributes
-	for (const tinyxml2::XMLAttribute* Attr = Node->FirstAttribute(); Attr; Attr = Attr->Next())
-	{
-		OutExtraAttribute->Properties.Add(UTF8_TO_TCHAR(Attr->Name()), UTF8_TO_TCHAR(Attr->Value()));
-	}
-
-	// add child attributes
-	for (tinyxml2::XMLElement* Child = Node->FirstChildElement(); Child; Child = Child->NextSiblingElement())
-	{
-		TSharedRef<FExtraAttribute> ChildAttribute = MakeShared<FExtraAttribute>();
-		TraverseAllChildAttributes(Child, ChildAttribute);
-		OutExtraAttribute->ChildProperties.Add(UTF8_TO_TCHAR(Child->Name()), ChildAttribute);
-	}
+	
 }
 
 bool UXmlParser::IsArrayElement(tinyxml2::XMLElement* Node)
