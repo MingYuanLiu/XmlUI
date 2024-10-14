@@ -1,6 +1,7 @@
 ﻿#pragma once
 
 #include "CoreMinimal.h"
+#include "XmlUmgTree.h"
 
 namespace XmlUITools
 {
@@ -9,6 +10,8 @@ namespace XmlUITools
 	public:
 		virtual bool SetValue(void* Container, const FString& Value) = 0;
 
+		virtual bool SetValue(void* Container, const FXmlAttribute* XmlAttribute, UClass* ContainerClass, FString* OutFailureReason) = 0;
+		
 		virtual ~IPropertySetter() {}
 	
 	protected:

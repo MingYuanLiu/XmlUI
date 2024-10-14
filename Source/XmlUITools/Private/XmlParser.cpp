@@ -248,7 +248,7 @@ void UXmlParser::ParseObjectAttributes(tinyxml2::XMLElement* Node, TMap<FString,
 		const char* PropertyValue = Element->GetText();
 		const bool bHasChild = Element->ChildElementCount() > 0;
 		const bool bIsArray = IsArrayElement(Element);
-		
+		  
 		if (!bHasChild && PropertyValue != nullptr)
 		{
 			FXmlAttribute XmlProperty;

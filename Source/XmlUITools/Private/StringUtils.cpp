@@ -67,9 +67,10 @@ EXmlAttributeType FStringUtils::GetAttributeTypeFromXmlValue(const FString& Valu
 {
 	EXmlAttributeType Type = EXmlAttributeType::None;
 	// bool
-	if (Value == "true" || Value == "false")
+	if (Value.Equals("true", ESearchCase::IgnoreCase) ||
+		Value.Equals("false", ESearchCase::IgnoreCase))
 	{
-		Type = EXmlAttributeType::Number;
+		Type = EXmlAttributeType::Bool;
 	}
 	
 	// number (int, float)

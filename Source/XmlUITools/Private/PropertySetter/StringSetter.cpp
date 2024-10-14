@@ -33,4 +33,35 @@ namespace XmlUITools
 		return true;
 	}
 
+	bool FStringSetter::SetValue(void* Container, const FXmlAttribute* XmlAttribute, UClass* ContainerClass, FString* OutFailureReason)
+	{
+		if (!Container)
+		{
+			UE_LOG(LogXmlUmg, Error, TEXT("Can not set string value due to container is null"));
+			return false;
+		}
+
+		FString StrVal = XmlAttribute->Value;
+
+		if (FStrProperty* StrProperty = CastField<FStrProperty>(Property))
+		{
+			StrProperty->SetPropertyValue_InContainer(Container, StrVal);
+			return true;
+		}
+
+		if (FNameProperty* NameProperty = CastField<FNameProperty>(Property))
+		{
+			NameProperty->SetPropertyValue_InContainer(Container, FName(*StrVal));
+			return true;
+		}
+
+		if (FTextProperty* TextProperty = CastField<FTextProperty>(Property))
+		{
+			TextProperty->SetPropertyValue_InContainer(Container, FText::FromString(StrVal));
+			return true;
+		}
+		
+		return false;
+	}
+
 }

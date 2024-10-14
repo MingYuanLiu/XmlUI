@@ -17,7 +17,6 @@ namespace XmlUITools
 	{
 		if (FEnumProperty* EnumProperty = CastField<FEnumProperty>(Property))
         {
-			if (Type == EXmlAttributeType::String)
 				return new FEnumSetter(Property, EnumProperty->GetEnum());
         }
 
@@ -56,6 +55,18 @@ namespace XmlUITools
 			if (Type == EXmlAttributeType::String)
                 return new FStringSetter(Property);
 		}
+		
+		if (FTextProperty* TextProperty = CastField<FTextProperty>(Property))
+		{
+			if (Type == EXmlAttributeType::String)
+				return new FStringSetter(Property);
+		}
+
+		if (FNameProperty* NameProperty = CastField<FNameProperty>(Property))
+		{
+			if (Type == EXmlAttributeType::String)
+				return new FStringSetter(Property);
+		}
 
 		if (FSetProperty* SetProperty = CastField<FSetProperty>(Property))
 		{
@@ -63,11 +74,6 @@ namespace XmlUITools
                 return new FArraySetter(Property, FArraySetter::String);
 		}
 
-		if (FTextProperty* TextProperty = CastField<FTextProperty>(Property))
-		{
-			if (Type == EXmlAttributeType::String)
-                return new FTextSetter(Property);
-		}
 	}
 
 	

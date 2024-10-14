@@ -31,4 +31,59 @@ namespace XmlUITools
 		
 		return true;
 	}
+
+	bool FNumberSetter::SetValue(void* Container, const FXmlAttribute* XmlAttribute, UClass* ContainerClass, FString* OutFailureReason)
+	{
+		if (FNumericProperty* NumericProperty = CastField<FNumericProperty>(Property))
+		{
+			void* Value = Property->ContainerPtrToValuePtr<uint8>(Container);
+			
+			if (NumericProperty->IsEnum() && XmlAttribute->Type == EXmlAttributeType::String)
+			{
+				// see if we were passed a string for the enum
+				const UEnum* Enum = NumericProperty->GetIntPropertyEnum();
+				check(Enum); // should be assured by IsEnum()
+				
+				const FString AttributeValue = XmlAttribute->Value;
+				const int64 IntValue = Enum->GetValueByName(FName(*AttributeValue), EGetByNameFlags::CheckAuthoredName);
+				if (IntValue == INDEX_NONE)
+				{
+					if (OutFailureReason)
+					{
+						*OutFailureReason = FString::Printf(TEXT("Unable to import enum %s from string value %s for not existing property %s"), *Enum->CppType, *AttributeValue, *Property->GetAuthoredName());
+					}
+					return false;
+				}
+				NumericProperty->SetIntPropertyValue(Value, IntValue);
+			}
+			else if (NumericProperty->IsFloatingPoint())
+			{
+				const float FloatVal = FCString::Atof(*XmlAttribute->Value); 
+				NumericProperty->SetFloatingPointPropertyValue(Value, FloatVal);
+			}
+			else if (NumericProperty->IsInteger())
+			{
+				const int64 IntVal = FCString::Atoi64(*XmlAttribute->Value);
+				NumericProperty->SetIntPropertyValue(Value, IntVal);
+			}
+			else
+			{
+				if (OutFailureReason)
+				{
+					*OutFailureReason = FString::Printf(TEXT("Unable to import numberic value into %s numeric property %s"), *Property->GetClass()->GetName(), *Property->GetAuthoredName());
+				}
+				
+				return false;
+			}
+
+			return true;
+		}
+
+		if (OutFailureReason)
+		{
+			*OutFailureReason = TEXT("Property not match to numeric property, can not use number setter.");
+		}
+
+		return false;
+	}
 }

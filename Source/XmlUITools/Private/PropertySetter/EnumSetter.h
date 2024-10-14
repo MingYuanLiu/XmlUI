@@ -9,6 +9,8 @@ namespace XmlUITools
 		FEnumSetter(FProperty* Property, UEnum* InEnum) : IPropertySetter(Property), Enum(InEnum) {}
 
 		virtual bool SetValue(void* Container, const FString& Value) override;
+
+		virtual bool SetValue(void* Container, const FXmlAttribute* XmlAttribute, UClass* ContainerClass, FString* OutFailureReason) override;
 	private:
 		UEnum* Enum;
 	};
