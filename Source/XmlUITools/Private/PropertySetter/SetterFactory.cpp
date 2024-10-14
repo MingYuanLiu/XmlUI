@@ -6,11 +6,72 @@
 #include "EnumSetter.h"
 #include "NumberSetter.h"
 #include "StringSetter.h"
-#include "UObjectSetter.h"
+#include "ObjectSetter.h"
+#include "TextSetter.h"
 #include "VectorSetter.h"
 
 namespace XmlUITools
 {
+
+	IPropertySetter* FSetterFactory::CreateSetter(FProperty* Property, EXmlAttributeType Type)
+	{
+		if (FEnumProperty* EnumProperty = CastField<FEnumProperty>(Property))
+        {
+			if (Type == EXmlAttributeType::String)
+				return new FEnumSetter(Property, EnumProperty->GetEnum());
+        }
+
+		if (FBoolProperty* BoolProperty = CastField<FBoolProperty>(Property))
+        {
+            if (Type == EXmlAttributeType::Bool)
+                return new FBoolSetter(Property);
+        }
+
+		if (FNumericProperty* NumericProperty = CastField<FIntProperty>(Property))
+        {
+            if (Type == EXmlAttributeType::Number)
+                return new FNumberSetter(Property);
+        }
+
+		if (FArrayProperty* ArrayProperty = CastField<FArrayProperty>(Property))
+        {
+            if (Type == EXmlAttributeType::Array)
+                return new FArraySetter(Property, FArraySetter::String);
+        }
+
+		if (FStructProperty* StructProperty = CastField<FStructProperty>(Property))
+        {
+            if (Type == EXmlAttributeType::Object)
+                return new FObjectSetter(Property);
+        }
+
+		if (FObjectProperty* ObjectProperty = CastField<FObjectProperty>(Property))
+        {
+            if (Type == EXmlAttributeType::Object)
+                return new FObjectSetter(Property);
+        }
+
+		if (FStrProperty *StringProperty = CastField<FStrProperty>(Property))
+		{
+			if (Type == EXmlAttributeType::String)
+                return new FStringSetter(Property);
+		}
+
+		if (FSetProperty* SetProperty = CastField<FSetProperty>(Property))
+		{
+			if (Type == EXmlAttributeType::Array)
+                return new FArraySetter(Property, FArraySetter::String);
+		}
+
+		if (FTextProperty* TextProperty = CastField<FTextProperty>(Property))
+		{
+			if (Type == EXmlAttributeType::String)
+                return new FTextSetter(Property);
+		}
+	}
+
+	
+	
 	IPropertySetter* FSetterFactory::CreateSetter(FProperty* Property, const FString& Value)
 	{
 		// bool

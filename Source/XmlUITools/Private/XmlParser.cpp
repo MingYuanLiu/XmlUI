@@ -147,7 +147,7 @@ UXmlUmgTree* UXmlParser::ParseFromXml(FString& Out_FailureReason)
 	return ParsedTree;
 }
 
-bool UXmlParser::SerializeTo(UXmlUmgTree* UmgTree)
+bool UXmlParser::SerializeToXml(UXmlUmgTree* UmgTree)
 {
 	if (XmlFilePath.IsEmpty())
 	{

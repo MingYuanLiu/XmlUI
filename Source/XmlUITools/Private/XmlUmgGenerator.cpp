@@ -99,6 +99,24 @@ UWidgetTree* UXmlUmgGenerator::GenerateWidgetTree(UUserWidget* Outer, UXmlUmgTre
 				return Widget;
 			}
 
+			for (TFieldIterator<FProperty> PropertyIt(WidgetClass.Get()); PropertyIt; ++PropertyIt)
+            {
+                FProperty* Property = *PropertyIt;
+				FString PropertyName = WidgetClass->GetAuthoredNameForField(Property);
+				if (Node->Properties.Contains(PropertyName))
+				{
+					FXmlAttribute* Attr = Node->Properties.Find(PropertyName);
+					void* Value = Property->ContainerPtrToValuePtr<uint8>(Widget);
+					// todo: set value
+					
+				}
+
+				if (Node->ExtraProperties.Contains(PropertyName))
+				{
+					
+				}
+            }
+
 			// todo: setup attributes
 			/*
 			for (const TPair<FString/* property name #1#, FString/* property value #1#>& Attr : Node->Properties)
@@ -232,7 +250,7 @@ void UXmlUmgGenerator::BuildAllWidgetClassList(const UClass* ActiveCurrentClass)
 		}
 		
 		// Convert name to lowercase letter underline format
-		const FString WidgetName = FStringUtils::ConvertNameToLowercaseUnderLineFormat(WidgetClass->GetName());
+		const FString WidgetName = WidgetClass->GetName();
 		
 		if (WidgetClass->IsChildOf(UUserWidget::StaticClass()))
 		{

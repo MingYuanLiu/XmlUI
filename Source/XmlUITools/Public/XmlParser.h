@@ -24,7 +24,7 @@ public:
 	UXmlUmgTree* ParseFromXml(FString& Out_FailureReason);
 
 	UFUNCTION(BlueprintCallable, Category="XmlUmg")
-	bool SerializeTo(UXmlUmgTree* UmgTree);
+	bool SerializeToXml(UXmlUmgTree* UmgTree);
 
 	UPROPERTY()
 	FString XmlFilePath;

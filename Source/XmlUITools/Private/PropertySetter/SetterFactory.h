@@ -3,6 +3,7 @@
 #include "UObject/UnrealType.h"
 
 #include "PropertySetter.h"
+#include "XmlUmgTree.h"
 
 namespace XmlUITools
 {
@@ -10,6 +11,8 @@ namespace XmlUITools
 	{
 	public:
 		static IPropertySetter* CreateSetter(FProperty* Property, const FString& Value);
+
+		static IPropertySetter* CreateSetter(FProperty* Property, EXmlAttributeType Type);
 	};
 
 }

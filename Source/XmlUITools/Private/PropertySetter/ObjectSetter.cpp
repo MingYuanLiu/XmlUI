@@ -1,10 +1,10 @@
-﻿#include "UObjectSetter.h"
+﻿#include "ObjectSetter.h"
 
 #include "LogXmlUmg.h"
 
 namespace XmlUITools
 {
-	bool FUObjectSetter::SetValue(void* Container, const FString& Value)
+	bool FObjectSetter::SetValue(void* Container, const FString& Value)
 	{
 		
 		if (!Container)
