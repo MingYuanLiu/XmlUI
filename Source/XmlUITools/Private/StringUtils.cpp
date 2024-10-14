@@ -3,6 +3,8 @@
 
 #include "StringUtils.h"
 
+#include <regex>
+
 FString FStringUtils::ConvertLowercaseLineFormatNameToCamelFormat(const FString& InputName)
 {
 	FString CamelFormatName = InputName.ToLower();
@@ -59,4 +61,43 @@ FString FStringUtils::ConvertNameToLowercaseUnderLineFormat(const FString& Input
 	}
 	
 	return LowercaseName;
+}
+
+EXmlAttributeType FStringUtils::GetAttributeTypeFromXmlValue(const FString& Value)
+{
+	EXmlAttributeType Type = EXmlAttributeType::None;
+	// bool
+	if (Value == "true" || Value == "false")
+	{
+		Type = EXmlAttributeType::Number;
+	}
+	
+	// number (int, float)
+	if (std::regex_match(TCHAR_TO_UTF8(*Value), std::regex("^\\d+$")) ||
+		std::regex_match(TCHAR_TO_UTF8(*Value), std::regex("^\\d+\\.\\d+$")))
+	{
+		Type = EXmlAttributeType::Number;
+	}
+
+	// array (int, float, string)
+	bool bIsIntArray = std::regex_match(TCHAR_TO_UTF8(*Value), std::regex("^\\d+(,\\d+)+$"));
+	bool bIsFloatArray = std::regex_match(TCHAR_TO_UTF8(*Value), std::regex("^\\d+\\.\\d+(,\\s*\\d+\\.\\d+)+$"));
+	bool bIsStrArray = std::regex_match(TCHAR_TO_UTF8(*Value), std::regex("^[a-zA-Z0-9]+(,\\s*[a-zA-Z0-9]+)+$"));
+	if (bIsIntArray || bIsFloatArray || bIsStrArray)
+	{
+		return EXmlAttributeType::Array;
+	}
+
+	// uobject ptr
+	if (std::regex_match(TCHAR_TO_UTF8(*Value), std::regex("^(/.*)+")))
+	{
+		return EXmlAttributeType::ObjectPtr;
+	}
+
+	if (!Value.IsEmpty())
+	{
+		Type = EXmlAttributeType::String;
+	}
+	
+	return Type;
 }

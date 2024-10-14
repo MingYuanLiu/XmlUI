@@ -1,9 +1,46 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <XmlUmg>
     <border width="1920" height="1080">
-        <button name="test" padding="0,1,1,0" on_clicked="onClick" is_focusable="true" color_and_opacity="(1,0,1,0)">
+        <button name="test" padding="0,1,1,0" on_clicked="onClick" is_focusable="true">
+            <XmlProperties>
+                <WidgetStyle>
+                    <Normal>
+                        <ResourceObject>
+                            /Game/Content/Test/Texture/UI_Image.UI_Image
+                        </ResourceObject>
+                        <ResourceName>
+                            UI_Image
+                        </ResourceName>
+                        <UVRegion>
+                            1,1
+                        </UVRegion>
+                    </Normal>
+                    <NormalPadding>
+                        0,0,1,1
+                    </NormalPadding>
+                    <PressedPadding>
+                        0,1,0,1
+                    </PressedPadding>
+                </WidgetStyle>
+                <ColorAndOpacity>
+                    <!-- Supported formats are: RGB, RRGGBB, RRGGBBAA, #RGB, #RRGGBB, #RRGGBBAA -->
+                    FFF
+                </ColorAndOpacity>
+                <Slots>
+                    <List.Element>
+                        /Game/Content/UI/Slot1
+                    </List.Element>>
+                    <List.Element>
+                        /Game/Content/UI/Slot2
+                    </List.Element>
+                </Slots>
+                
+            </XmlProperties>
+            
+            <text> hello world </text>
+            
 			Click me
-			<text> hello world </text>
+			
         </button>
     </border>
 </XmlUmg>

@@ -21,7 +21,7 @@ public:
 	using NodeTraverseFuncType = TFunction<void(tinyxml2::XMLElement* Node)>;
 
 	UFUNCTION(BlueprintCallable, Category="XmlUmg")
-	UXmlUmgTree* ParseTo();
+	UXmlUmgTree* ParseFromXml(FString& Out_FailureReason);
 
 	UFUNCTION(BlueprintCallable, Category="XmlUmg")
 	bool SerializeTo(UXmlUmgTree* UmgTree);
@@ -32,8 +32,9 @@ public:
 protected:
 	tinyxml2::XMLDocument* OpenXmlFile() const;
 
-	void ParseExtraAttributes(tinyxml2::XMLElement* Node, TMap<FString, FExtraAttribute>& OutExtraAttributes);
-	void TraverseAllChildAttributes(tinyxml2::XMLElement* Node, TSharedRef<FExtraAttribute> OutExtraAttribute);
+	void ParseExtraProperties(tinyxml2::XMLElement* Node, TMap<FString, FXmlExtraAttribute>& OutExtraAttributes);
+	void TraverseAllChildProperties(tinyxml2::XMLElement* Node, TObjectPtr<FXmlExtraAttribute> OutExtraAttribute);
+	bool IsArrayElement(tinyxml2::XMLElement* Node);
 
 	void TraverseAllNodes(tinyxml2::XMLElement* Root, const NodeTraverseFuncType& Func);
 	void ForEachChildElements(tinyxml2::XMLElement* Root, const NodeTraverseFuncType& TraverseFunc);

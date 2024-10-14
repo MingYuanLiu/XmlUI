@@ -4,8 +4,9 @@
 #include "XmlParser.h"
 
 #include "LogXmlUmg.h"
+#include "StringUtils.h"
 
-const char* UXmlParser::ExtraAttributeXmlKeyword = "xml_extra_attributes";
+const char* UXmlParser::ExtraAttributeXmlKeyword = "XmlProperties";
 
 tinyxml2::XMLDocument* UXmlParser::OpenXmlFile() const
 {
@@ -58,7 +59,7 @@ void UXmlParser::TraverseAllNodes(tinyxml2::XMLElement* Root, const NodeTraverse
 
 // todo: parse 'attributes' element in xml file
 
-UXmlUmgTree* UXmlParser::ParseTo()
+UXmlUmgTree* UXmlParser::ParseFromXml(FString& Out_FailureReason)
 {
 	if (XmlFilePath.IsEmpty())
 	{
@@ -97,7 +98,10 @@ UXmlUmgTree* UXmlParser::ParseTo()
 		XmlUmgNode->WidgetDisplayText = UTF8_TO_TCHAR(Node->GetText());
 		for (const tinyxml2::XMLAttribute* Attr = Node->FirstAttribute(); Attr; Attr = Attr->Next())
 		{
-			XmlUmgNode->Attributes.Add(UTF8_TO_TCHAR(Attr->Name()), UTF8_TO_TCHAR(Attr->Value()));
+			FXmlAttribute Attribute;
+			Attribute.Value = UTF8_TO_TCHAR(Attr->Value());
+			Attribute.Type = FStringUtils::GetAttributeTypeFromXmlValue(Attribute.Value);
+			XmlUmgNode->Properties.Add(UTF8_TO_TCHAR(Attr->Name()), Attribute);
 		}
 
 		return XmlUmgNode;
@@ -119,9 +123,9 @@ UXmlUmgTree* UXmlParser::ParseTo()
 			if (strcmp(Node->Name(), ExtraAttributeXmlKeyword) == 0)
 			{
 				UXmlUmgNode* ParentNode = Parent.Value;
-				TMap<FString, FExtraAttribute> ExtraAttributes;
-				ParseExtraAttributes(Node, ExtraAttributes);
-				ParentNode->ExtraAttributes = ExtraAttributes;
+				TMap<FString, FXmlExtraAttribute> ExtraProperties;
+				ParseExtraProperties(Node, ExtraProperties);
+				ParentNode->ExtraProperties = ExtraProperties;
 				return;
 			}
 			
@@ -202,7 +206,7 @@ bool UXmlParser::SerializeTo(UXmlUmgTree* UmgTree)
 	return XmlDoc.SaveFile(TCHAR_TO_UTF8(*XmlFilePath)) == 0;
 }
 
-void UXmlParser::ParseExtraAttributes(tinyxml2::XMLElement* Node, TMap<FString, FExtraAttribute>& OutExtraAttributes)
+void UXmlParser::ParseExtraProperties(tinyxml2::XMLElement* Node, TMap<FString, FXmlExtraAttribute>& OutExtraAttributes)
 {
 	if (strcmp(Node->Name(), ExtraAttributeXmlKeyword) != 0)
 	{
@@ -212,13 +216,42 @@ void UXmlParser::ParseExtraAttributes(tinyxml2::XMLElement* Node, TMap<FString, 
 	
 	for (tinyxml2::XMLElement* Element = Node->FirstChildElement(); Element; Element = Element->NextSiblingElement())
 	{
-		FExtraAttribute Result;
-		TraverseAllChildAttributes(Element, MakeShareable(&Result));
-		OutExtraAttributes.Add(UTF8_TO_TCHAR(Element->Name()), Result);
+		const char* PropertyName = Element->Name();
+		const char* PropertyValue = Element->GetText();
+		const bool bHasChild = Element->ChildElementCount() > 0;
+		const bool bIsArray = IsArrayElement(Element);
+
+		TObjectPtr<FXmlExtraAttribute> CurrentElementXmlExtraProperty = NewObject<FXmlExtraAttribute>();
+		
+		if (!bHasChild && PropertyValue != nullptr)
+		{
+			FXmlAttribute XmlProperty;
+			XmlProperty.Value = UTF8_TO_TCHAR(PropertyValue);
+			XmlProperty.Type = FStringUtils::GetAttributeTypeFromXmlValue(XmlProperty.Value);
+			CurrentElementXmlExtraProperty->Properties.Add(PropertyName, XmlProperty);
+			CurrentElementXmlExtraProperty->Type = XmlProperty.Type;
+		}
+
+		if (bIsArray)
+		{
+			
+		}
+		
+		// 
+		if (bHasChild)
+		{
+			TraverseAllChildProperties(Element, CurrentElementXmlExtraProperty);
+			 
+		}
+
+		// array
+		
+		auto ElementAttr = *CurrentElementXmlExtraProperty;
+		OutExtraAttributes.Add(UTF8_TO_TCHAR(Element->Name()), ElementAttr);
 	}
 }
 
-void UXmlParser::TraverseAllChildAttributes(tinyxml2::XMLElement* Node, TSharedRef<FExtraAttribute> OutExtraAttribute)
+void UXmlParser::TraverseAllChildProperties(tinyxml2::XMLElement* Node, TObjectPtr<FXmlExtraAttribute> OutExtraAttribute)
 {
 	// add attributes
 	for (const tinyxml2::XMLAttribute* Attr = Node->FirstAttribute(); Attr; Attr = Attr->Next())
@@ -233,4 +266,20 @@ void UXmlParser::TraverseAllChildAttributes(tinyxml2::XMLElement* Node, TSharedR
 		TraverseAllChildAttributes(Child, ChildAttribute);
 		OutExtraAttribute->ChildProperties.Add(UTF8_TO_TCHAR(Child->Name()), ChildAttribute);
 	}
+}
+
+bool UXmlParser::IsArrayElement(tinyxml2::XMLElement* Node)
+{
+	bool IsArray = Node->ChildElementCount() > 0;
+	// if all the name of child elements is List.Element, the element type is array
+	for (tinyxml2::XMLElement* Element = Node->FirstChildElement(); Element; Element = Element->NextSiblingElement())
+	{
+		if (strcmp(Element->Name(), "List.Element") != 0)
+		{
+			IsArray = false;
+			break;
+		}
+	}
+
+	return IsArray;
 }

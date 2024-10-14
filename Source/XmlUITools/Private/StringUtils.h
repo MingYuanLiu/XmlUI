@@ -3,6 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "XmlUmgTree.h"
 
 /**
  * 
@@ -13,4 +14,6 @@ public:
 	static FString ConvertLowercaseLineFormatNameToCamelFormat(const FString& InputName);
 
 	static FString ConvertNameToLowercaseUnderLineFormat(const FString& InputName);
+
+	static EXmlAttributeType GetAttributeTypeFromXmlValue(const FString& Value);
 };
