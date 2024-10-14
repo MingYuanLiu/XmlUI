@@ -21,6 +21,8 @@ namespace XmlUITools
 			SplitStringToFloatArray(Value, VectorData);
 			
 			// if (StructProperty->Struct)
+			// 选出UE中所有可以接受向量数据的结构体
+			
 		}
 		
 		return true;

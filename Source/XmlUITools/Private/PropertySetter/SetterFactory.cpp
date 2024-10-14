@@ -5,6 +5,7 @@
 #include "BoolSetter.h"
 #include "EnumSetter.h"
 #include "NumberSetter.h"
+#include "StringSetter.h"
 #include "UObjectSetter.h"
 #include "VectorSetter.h"
 
@@ -91,9 +92,14 @@ namespace XmlUITools
 			}
 		}
 
-		// struct data
+		// string, name or text
+		if (Property->IsA<FStrProperty>() ||
+			Property->IsA<FNameProperty>() ||
+            Property->IsA<FTextProperty>())
+        {
+            return new FStringSetter(Property);
+        }
 		
-
 		return nullptr;
 	}
 }
