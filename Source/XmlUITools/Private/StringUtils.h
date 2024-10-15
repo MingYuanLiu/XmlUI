@@ -23,4 +23,6 @@ public:
 	}
 
 	static FString ConvertXmlAttributeTypeToString(EXmlAttributeType AttributeType);
+
+	static void SplitStringVectorToArray(const FString& InValue, TArray<float>& OutVector);
 };

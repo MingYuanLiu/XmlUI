@@ -89,6 +89,13 @@ EXmlAttributeType FStringUtils::GetAttributeTypeFromXmlValue(const FString& Valu
 		return EXmlAttributeType::Array;
 	}
 
+	bool bIsIntVector = std::regex_match(TCHAR_TO_UTF8(*Value), std::regex("^\\(\\d+(,\\d+)+\\)$"));
+	bool bIsFloatVector = std::regex_match(TCHAR_TO_UTF8(*Value), std::regex("^\\(\\d+\\.\\d+(,\\d+\\.\\d+)+\\)$"));
+    if (bIsIntVector || bIsFloatVector)
+    {
+        return EXmlAttributeType::Vector;
+    }
+
 	// uobject ptr
 	if (std::regex_match(TCHAR_TO_UTF8(*Value), std::regex("^(/.*)+")))
 	{
@@ -119,7 +126,25 @@ FString FStringUtils::ConvertXmlAttributeTypeToString(EXmlAttributeType Attribut
             return "string";
 		case EXmlAttributeType::Object:
 			return "object";
+		case EXmlAttributeType::Vector:
+            return "vector";
         default:
             return "none";
 	}
+}
+
+void FStringUtils::SplitStringVectorToArray(const FString& InValue, TArray<float>& OutVector)
+{
+	FString TmpVal = InValue;
+	if (TmpVal.StartsWith("(") && TmpVal.EndsWith(")"))
+    {
+        TmpVal = TmpVal.Mid(1, TmpVal.Len() - 2);
+    }
+
+	TArray<FString> SplittedValues;
+    TmpVal.ParseIntoArray(SplittedValues, TEXT(","), true);
+    for (const auto& Value : SplittedValues)
+    {
+        OutVector.Add(FCString::Atof(*Value));
+    }
 }
