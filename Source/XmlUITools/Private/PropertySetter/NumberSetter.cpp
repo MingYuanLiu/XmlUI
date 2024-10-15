@@ -32,11 +32,35 @@ namespace XmlUITools
 		return true;
 	}
 
-	bool FNumberSetter::SetValue(void* Container, const FXmlAttribute* XmlAttribute, UClass* ContainerClass, FString* OutFailureReason)
+	bool FNumberSetter::SetValue(void* Container, const FString& PropertyName, const FXmlAttribute* XmlAttribute,
+		UClass* ContainerClass, void* PropertyValue, FString* OutFailureReason)
 	{
+		if (!Container)
+		{
+			if (OutFailureReason)
+			{
+				*OutFailureReason = TEXT("Container is null, can not use number setter.");
+			}
+			return false;
+		}
+		
+		if (XmlAttribute == nullptr)
+        {
+            if (OutFailureReason)
+            {
+                *OutFailureReason = TEXT("XmlAttribute is null, can not use number setter.");
+            }
+            return false;
+        }
+		
 		if (FNumericProperty* NumericProperty = CastField<FNumericProperty>(Property))
 		{
-			void* Value = Property->ContainerPtrToValuePtr<uint8>(Container);
+			if (!PropertyValue)
+			{
+				PropertyValue = Property->ContainerPtrToValuePtr<uint8>(Container);
+			}
+			
+			const FString AttributeValue = XmlAttribute->Attributes[PropertyName];
 			
 			if (NumericProperty->IsEnum() && XmlAttribute->Type == EXmlAttributeType::String)
 			{
@@ -44,7 +68,6 @@ namespace XmlUITools
 				const UEnum* Enum = NumericProperty->GetIntPropertyEnum();
 				check(Enum); // should be assured by IsEnum()
 				
-				const FString AttributeValue = XmlAttribute->Value;
 				const int64 IntValue = Enum->GetValueByName(FName(*AttributeValue), EGetByNameFlags::CheckAuthoredName);
 				if (IntValue == INDEX_NONE)
 				{
@@ -54,17 +77,17 @@ namespace XmlUITools
 					}
 					return false;
 				}
-				NumericProperty->SetIntPropertyValue(Value, IntValue);
+				NumericProperty->SetIntPropertyValue(PropertyValue, IntValue);
 			}
 			else if (NumericProperty->IsFloatingPoint())
 			{
-				const float FloatVal = FCString::Atof(*XmlAttribute->Value); 
-				NumericProperty->SetFloatingPointPropertyValue(Value, FloatVal);
+				const float FloatVal = FCString::Atof(*AttributeValue); 
+				NumericProperty->SetFloatingPointPropertyValue(PropertyValue, FloatVal);
 			}
 			else if (NumericProperty->IsInteger())
 			{
-				const int64 IntVal = FCString::Atoi64(*XmlAttribute->Value);
-				NumericProperty->SetIntPropertyValue(Value, IntVal);
+				const int64 IntVal = FCString::Atoi64(*AttributeValue);
+				NumericProperty->SetIntPropertyValue(PropertyValue, IntVal);
 			}
 			else
 			{

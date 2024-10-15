@@ -12,7 +12,7 @@ namespace XmlUITools
 			return false;
 		}
 
-		auto EnumValue = Enum->GetValueByNameString(Value);
+		auto EnumValue = mEnum->GetValueByNameString(Value);
 		if (EnumValue == INDEX_NONE)
 		{
 			UE_LOG(LogXmlUmg, Error, TEXT("Enum value %s can not found"), *Value)
@@ -27,7 +27,8 @@ namespace XmlUITools
 		return true;
 	}
 
-	bool FEnumSetter::SetValue(void* Container, const FXmlAttribute* XmlAttribute, UClass* ContainerClass, FString* OutFailureReason)
+	bool FEnumSetter::SetValue(void* Container, const FString& PropertyName, const FXmlAttribute* XmlAttribute,
+		UClass* ContainerClass, void* PropertyValue, FString* OutFailureReason)
 	{
 		if (FEnumProperty* EnumProperty = CastField<FEnumProperty>(Property))
 		{
@@ -36,25 +37,37 @@ namespace XmlUITools
 				// see if we were passed a string for the enum
 				const UEnum* Enum = EnumProperty->GetEnum();
 				check(Enum);
-				FString EnumValue = XmlAttribute->Value;
+				FString EnumValue = XmlAttribute->Attributes[PropertyName];
 				int64 IntValue = Enum->GetValueByName(FName(*EnumValue), EGetByNameFlags::CheckAuthoredName);
 				if (IntValue == INDEX_NONE)
 				{
 					FString Failed = FString::Printf(TEXT("Unable to import enum %s from string value %s for not existing property %s"), *Enum->CppType, *EnumValue, *Property->GetAuthoredName());
-					UE_LOG(LogJson, Error, TEXT("EnumSetter - %s"), *Failed)
+					UE_LOG(LogXmlUmg, Error, TEXT("EnumSetter - %s"), *Failed)
 					if (OutFailureReason)
 					{
 						*OutFailureReason = Failed;
 					}
 				}
-				
-				EnumProperty->SetValue_InContainer(Container, &IntValue);
+
+				if (!PropertyValue)
+				{
+					EnumProperty->SetValue_InContainer(Container, &IntValue);
+				}
+				else
+				{
+					EnumProperty->GetUnderlyingProperty()->SetIntPropertyValue(PropertyValue, IntValue);
+				}
 			}
 			else
 			{
-				void* Value = Property->ContainerPtrToValuePtr<uint8>(Container);
+				if (!PropertyValue)
+				{
+					PropertyValue = Property->ContainerPtrToValuePtr<uint8>(Container);
+				}
 				// AsNumber will log an error for completely inappropriate types (then give us a default)
-				EnumProperty->GetUnderlyingProperty()->SetIntPropertyValue(Value, static_cast<uint64>(FCString::Atoi(*XmlAttribute->Value)));
+				FString EnumValue = XmlAttribute->Attributes[PropertyName];
+				if (!EnumValue.IsEmpty())
+					EnumProperty->GetUnderlyingProperty()->SetIntPropertyValue(PropertyValue, static_cast<uint64>(FCString::Atoi(*EnumValue)));
 			}
 
 			return true;

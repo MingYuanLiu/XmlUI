@@ -10,7 +10,8 @@ namespace XmlUITools
 	public:
 		virtual bool SetValue(void* Container, const FString& Value) = 0;
 
-		virtual bool SetValue(void* Container, const FXmlAttribute* XmlAttribute, UClass* ContainerClass, FString* OutFailureReason) = 0;
+		virtual bool SetValue(void* Container, const FString& PropertyName, const FXmlAttribute* XmlAttribute,
+							UClass* ContainerClass, void* PropertyValue, FString* OutFailureReason) = 0;
 		
 		virtual ~IPropertySetter() {}
 	

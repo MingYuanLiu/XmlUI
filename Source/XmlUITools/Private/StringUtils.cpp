@@ -102,3 +102,24 @@ EXmlAttributeType FStringUtils::GetAttributeTypeFromXmlValue(const FString& Valu
 	
 	return Type;
 }
+
+FString FStringUtils::ConvertXmlAttributeTypeToString(EXmlAttributeType AttributeType)
+{
+	switch (AttributeType)
+	{
+		case EXmlAttributeType::Bool:
+            return "bool";
+        case EXmlAttributeType::Number:
+            return "number";
+        case EXmlAttributeType::Array:
+            return "array";
+        case EXmlAttributeType::ObjectPtr:
+            return "uobject ptr";
+        case EXmlAttributeType::String:
+            return "string";
+		case EXmlAttributeType::Object:
+			return "object";
+        default:
+            return "none";
+	}
+}

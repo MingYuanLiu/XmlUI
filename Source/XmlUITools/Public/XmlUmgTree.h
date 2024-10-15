@@ -22,27 +22,30 @@ USTRUCT(BlueprintType)
 struct FXmlAttribute
 {
 	GENERATED_BODY()
+	TMap<FString/* property name */, FString> Attributes;
+	
+	TMap<FString/* struct property name */, FXmlAttribute*> ChildAttributes;
 
-	FString Value;
+	TArray<FXmlAttribute> ArrayAttributes;
 
 	EXmlAttributeType Type;
 };
 
-USTRUCT(BlueprintType)
+/*USTRUCT(BlueprintType)
 struct FXmlExtraAttribute
 {
 	GENERATED_BODY()
 	
-	TMap<FString/* property name */, FXmlAttribute> Properties;
+	TMap<FString/* property name #1#, FXmlAttribute> Properties;
 	
-	TMap<FString/* struct property name */, FXmlExtraAttribute*> ChildProperties;
+	TMap<FString/* struct property name #1#, FXmlExtraAttribute*> ChildProperties;
 
 	TArray<FXmlAttribute> ArrayProperties;
 
 	TArray<FXmlExtraAttribute> ObjectArrayProperties;
 	
 	EXmlAttributeType Type;
-};
+};*/
 
 UCLASS(BlueprintType)
 class UXmlUmgNode : public UObject
@@ -58,8 +61,8 @@ public:
 	UPROPERTY(EditAnywhere)
 	TMap<FString/* property name */, FXmlAttribute> Properties; // properties defined in xml node attribute region
 
-	UPROPERTY(EditAnywhere)
-	TMap<FString/* property name */, FXmlExtraAttribute> ExtraProperties; // extra properties defined in <XmlProperties></XmlProperties> child element
+	//UPROPERTY(EditAnywhere)
+	//TMap<FString/* property name */, FXmlExtraAttribute> ExtraProperties; // extra properties defined in <XmlProperties></XmlProperties> child element
 
 	UPROPERTY(EditAnywhere)
 	TArray<UXmlUmgNode*> ChildNodes;

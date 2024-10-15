@@ -108,12 +108,6 @@ UWidgetTree* UXmlUmgGenerator::GenerateWidgetTree(UUserWidget* Outer, UXmlUmgTre
 					FXmlAttribute* Attr = Node->Properties.Find(PropertyName);
 					void* Value = Property->ContainerPtrToValuePtr<uint8>(Widget);
 					// todo: set value
-					
-				}
-
-				if (Node->ExtraProperties.Contains(PropertyName))
-				{
-					
 				}
             }
 

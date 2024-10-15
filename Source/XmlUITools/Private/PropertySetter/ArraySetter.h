@@ -13,20 +13,13 @@ namespace XmlUITools
 			String
 		};
 		
-		FArraySetter(FProperty* Property, EArrayDataType InDataType) : IPropertySetter(Property), ArrayDataType(InDataType) {}
+		FArraySetter(FProperty* Property) : IPropertySetter(Property) {}
 
 		virtual bool SetValue(void* Container, const FString& Value) override;
 
-	private:
-
-		// todo: maybe use template to simplify coding
-		void SetIntArray(void* Container, const FString& Value) const;
-
-		void SetFloatArray(void* Container, const FString& Value) const;
-
-		void SetStrArray(void* Container, const FString& Value) const;
+		virtual bool SetValue(void* Container, const FString& PropertyName, const FXmlAttribute* XmlAttribute,
+			UClass* ContainerClass, void* PropertyValue = nullptr, FString* OutFailureReason = nullptr) override;
 		
-		EArrayDataType ArrayDataType;
 	};
 }
 

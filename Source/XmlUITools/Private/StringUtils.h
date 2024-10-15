@@ -16,4 +16,11 @@ public:
 	static FString ConvertNameToLowercaseUnderLineFormat(const FString& InputName);
 
 	static EXmlAttributeType GetAttributeTypeFromXmlValue(const FString& Value);
+	
+	static FString ReplaceEnterLineAndTrimStart(const FString& InString)
+	{
+		return InString.Replace(TEXT("\n"), TEXT("")).TrimStartAndEnd();
+	}
+
+	static FString ConvertXmlAttributeTypeToString(EXmlAttributeType AttributeType);
 };

@@ -1,125 +1,94 @@
 ﻿#include "ArraySetter.h"
 
 #include "LogXmlUmg.h"
+#include "SetterFactory.h"
+#include "StringUtils.h"
 
 namespace XmlUITools
 {
 	bool FArraySetter:: SetValue(void* Container, const FString& Value)
 	{
-		if (!Container)
-		{
-			UE_LOG(LogXmlUmg, Error, TEXT("Can not set array value due to container is null"))
-			return false;
-		}
-
-		// split value to array
-		switch (ArrayDataType)
-		{
-		case EArrayDataType::Int:
-			SetIntArray(Container, Value);
-			break;
-		case EArrayDataType::Float:
-			SetFloatArray(Container, Value);
-			break;
-		case EArrayDataType::String:
-			SetStrArray(Container, Value);
-			break;
-		default:
-			break;
-		}
 
 		
 		return true;
 	}
 
-	void FArraySetter::SetIntArray(void* Container, const FString& Value) const
+	bool FArraySetter::SetValue(void* Container, const FString& PropertyName, const FXmlAttribute* XmlAttribute, UClass* ContainerClass, void* PropertyValue, FString* OutFailureReason)
 	{
-		TArray<FString> SplitArray;
-		Value.ParseIntoArray(SplitArray, TEXT(","), true);
+		if (!XmlAttribute)
+        {
+            if (OutFailureReason)
+            {
+                *OutFailureReason = TEXT("xml attribute is null");
+            }
+            return false;
+        }
 
-		TArray<int32> IntArray;
-		for (FString Val : SplitArray)
+		if (!Container)
 		{
-			Val = Val.TrimStartAndEnd();
-			int32 IntVal = FCString::Atoi(*Val);
-			IntArray.Add(IntVal);
+			if (OutFailureReason)
+            {
+                *OutFailureReason = TEXT("container is null");
+            }
+			return false;
 		}
 
 		if (FArrayProperty* ArrayProperty = CastField<FArrayProperty>(Property))
 		{
-			FScriptArrayHelper ArrayHelper(ArrayProperty, ArrayProperty->ContainerPtrToValuePtr<void>(Container));
-			ArrayHelper.EmptyAndAddValues(IntArray.Num());
-
-			for (int32 Idx = 0; Idx < ArrayHelper.Num(); ++Idx)
+			if (XmlAttribute->Type != EXmlAttributeType::Array)
 			{
-				FProperty* InnerProperty = ArrayProperty->Inner;
-				if (FIntProperty* IntProperty = CastField<FIntProperty>(InnerProperty))
+				if (OutFailureReason)
+                {
+                    *OutFailureReason = TEXT("xml attribute type is not array");
+                }
+				return false;
+			}
+
+			if (XmlAttribute->ArrayAttributes.IsEmpty())
+			{
+				if (OutFailureReason)
+                {
+                    *OutFailureReason = TEXT("Cxml attribute array attributes is empty");
+                }
+				return false;
+			}
+
+			if (!PropertyValue)
+			{
+				PropertyValue = ArrayProperty->ContainerPtrToValuePtr<uint8>(Container);
+			}
+
+			auto ArrayLen = XmlAttribute->ArrayAttributes.Num();
+			// make the output array size match
+			FScriptArrayHelper Helper(ArrayProperty, PropertyValue);
+			Helper.EmptyAndAddValues(ArrayLen);
+			for (int32 i = 0; i < ArrayLen; ++i)
+			{
+				FXmlAttribute ElementAttr = XmlAttribute->ArrayAttributes[i];
+				if (IPropertySetter* InnerSetter = FSetterFactory::CreateSetter(ArrayProperty->Inner, ElementAttr.Type))
 				{
-					void* ElementPtr = ArrayHelper.GetRawPtr(Idx);
-					IntProperty->SetPropertyValue(ElementPtr, IntArray[Idx]);
+					if (!InnerSetter->SetValue(Container, PropertyName, &ElementAttr, ContainerClass, Helper.GetRawPtr(i), OutFailureReason))
+                    {
+						if (OutFailureReason)
+						{
+							*OutFailureReason = FString::Printf(TEXT("set array element value failed with index %d"), i);
+						}
+                        return false;
+                    }
+				}
+				else
+				{
+					if (OutFailureReason)
+                    {
+                        *OutFailureReason = FString::Printf(TEXT("Create property setter for array element failed, Inner element type is %s"),
+                        	*FStringUtils::ConvertXmlAttributeTypeToString(ElementAttr.Type));
+                    }
+					return false;
 				}
 			}
 		}
+
+		return true;
 	}
-
-	void FArraySetter::SetFloatArray(void* Container, const FString& Value) const
-	{
-		TArray<FString> SplitArray;
-		Value.ParseIntoArray(SplitArray, TEXT(","), true);
-
-		TArray<float> FloatArray;
-		for (FString Val : SplitArray)
-		{
-			Val = Val.TrimStartAndEnd();
-			float FloatVal = FCString::Atof(*Val);
-			FloatArray.Add(FloatVal);
-		}
-
-		if (FArrayProperty* ArrayProperty = CastField<FArrayProperty>(Property))
-		{
-			FScriptArrayHelper ArrayHelper(ArrayProperty, ArrayProperty->ContainerPtrToValuePtr<void>(Container));
-			ArrayHelper.EmptyAndAddValues(FloatArray.Num());
-
-			for (int32 Idx = 0; Idx < ArrayHelper.Num(); ++Idx)
-			{
-				FProperty* InnerProperty = ArrayProperty->Inner;
-				if (FFloatProperty* FloatProperty = CastField<FFloatProperty>(InnerProperty))
-				{
-					void* ElementPtr = ArrayHelper.GetRawPtr(Idx);
-					FloatProperty->SetPropertyValue(ElementPtr, FloatArray[Idx]);
-				}
-			}
-		}
-	}
-
-	void FArraySetter::SetStrArray(void* Container, const FString& Value) const
-	{
-		TArray<FString> SplitArray;
-		Value.ParseIntoArray(SplitArray, TEXT(","), true);
-
-		TArray<FString> StrArray;
-		for (FString Val : SplitArray)
-		{
-			Val = Val.TrimStartAndEnd();
-			StrArray.Add(Val);
-		}
-
-		if (FArrayProperty* ArrayProperty = CastField<FArrayProperty>(Property))
-		{
-			FScriptArrayHelper ArrayHelper(ArrayProperty, ArrayProperty->ContainerPtrToValuePtr<void>(Container));
-			ArrayHelper.EmptyAndAddValues(StrArray.Num());
-
-			for (int32 Idx = 0; Idx < ArrayHelper.Num(); ++Idx)
-			{
-				FProperty* InnerProperty = ArrayProperty->Inner;
-				if (FStrProperty* StrProperty = CastField<FStrProperty>(InnerProperty))
-				{
-					void* ElementPtr = ArrayHelper.GetRawPtr(Idx);
-					StrProperty->SetPropertyValue(ElementPtr, StrArray[Idx]);
-				}
-			}
-		}
-	}
-
 
 }

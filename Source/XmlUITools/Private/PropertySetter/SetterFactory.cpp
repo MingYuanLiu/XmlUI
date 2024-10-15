@@ -7,7 +7,6 @@
 #include "NumberSetter.h"
 #include "StringSetter.h"
 #include "ObjectSetter.h"
-#include "TextSetter.h"
 #include "VectorSetter.h"
 
 namespace XmlUITools
@@ -31,13 +30,29 @@ namespace XmlUITools
             if (Type == EXmlAttributeType::Number)
                 return new FNumberSetter(Property);
         }
-
+		
 		if (FArrayProperty* ArrayProperty = CastField<FArrayProperty>(Property))
-        {
-            if (Type == EXmlAttributeType::Array)
-                return new FArraySetter(Property, FArraySetter::String);
-        }
+		{
+			if (Type == EXmlAttributeType::Array)
+				return new FArraySetter(Property);
+		}
+		
+		if (FStrProperty *StringProperty = CastField<FStrProperty>(Property))
+		{
+			return new FStringSetter(Property);
+		}
+		
+		if (FTextProperty* TextProperty = CastField<FTextProperty>(Property))
+		{
+			return new FStringSetter(Property);
+		}
 
+		if (FNameProperty* NameProperty = CastField<FNameProperty>(Property))
+		{
+			return new FStringSetter(Property);
+		}
+		
+		/*
 		if (FStructProperty* StructProperty = CastField<FStructProperty>(Property))
         {
             if (Type == EXmlAttributeType::Object)
@@ -50,36 +65,21 @@ namespace XmlUITools
                 return new FObjectSetter(Property);
         }
 
-		if (FStrProperty *StringProperty = CastField<FStrProperty>(Property))
-		{
-			if (Type == EXmlAttributeType::String)
-                return new FStringSetter(Property);
-		}
-		
-		if (FTextProperty* TextProperty = CastField<FTextProperty>(Property))
-		{
-			if (Type == EXmlAttributeType::String)
-				return new FStringSetter(Property);
-		}
-
-		if (FNameProperty* NameProperty = CastField<FNameProperty>(Property))
-		{
-			if (Type == EXmlAttributeType::String)
-				return new FStringSetter(Property);
-		}
 
 		if (FSetProperty* SetProperty = CastField<FSetProperty>(Property))
 		{
 			if (Type == EXmlAttributeType::Array)
                 return new FArraySetter(Property, FArraySetter::String);
-		}
+		}*/
 
+		return nullptr;
 	}
 
 	
 	
 	IPropertySetter* FSetterFactory::CreateSetter(FProperty* Property, const FString& Value)
 	{
+		/*
 		// bool
 		if (Value == "true" || Value == "false")
 		{
@@ -166,6 +166,7 @@ namespace XmlUITools
         {
             return new FStringSetter(Property);
         }
+        */
 		
 		return nullptr;
 	}

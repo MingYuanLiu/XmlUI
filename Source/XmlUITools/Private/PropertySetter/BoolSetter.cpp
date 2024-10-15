@@ -21,21 +21,47 @@ namespace XmlUITools
 		return true;
 	}
 	
-	bool FBoolSetter::SetValue(void* Container, const FXmlAttribute* XmlAttribute, UClass* ContainerClass, FString* OutFailureReason)
+	bool FBoolSetter::SetValue(void* Container, const FString& PropertyName, const FXmlAttribute* XmlAttribute,
+		UClass* ContainerClass, void* PropertyValue, FString* OutFailureReason)
 	{
+		if (XmlAttribute == nullptr)
+        {
+            if (OutFailureReason)
+            {
+                *OutFailureReason = TEXT("Attribute is null");
+            }
+            return false;
+        }
+		
 		if (FBoolProperty* BoolProperty = CastField<FBoolProperty>(Property))
 		{
 			bool BoolVal = false;
-			if (XmlAttribute->Value.Equals("true", ESearchCase::IgnoreCase))
+			FString AttributeValue = XmlAttribute->Attributes[PropertyName];
+			if (AttributeValue.Equals("true", ESearchCase::IgnoreCase))
 			{
 				BoolVal = true;
 			}
-			else if (XmlAttribute->Value.Equals("false", ESearchCase::IgnoreCase))
+			else if (AttributeValue.Equals("false", ESearchCase::IgnoreCase))
 			{
-				BoolVal = false;	
+				BoolVal = false;
 			}
-			
-			BoolProperty->SetValue_InContainer(Container, &BoolVal);
+			else
+			{
+				if (OutFailureReason)
+                {
+                    *OutFailureReason = FString::Printf( TEXT("Attribute value is not true or false, attribute value is %s"), *AttributeValue);
+                }
+				return false;
+			}
+
+			if (!PropertyValue)
+			{
+				BoolProperty->SetValue_InContainer(Container, &BoolVal);
+			}
+			else
+			{
+				BoolProperty->SetPropertyValue(PropertyValue, BoolVal);
+			}
 		}
 		
 		return true;
