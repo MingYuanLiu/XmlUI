@@ -145,6 +145,11 @@ void FStringUtils::SplitStringVectorToArray(const FString& InValue, TArray<float
     TmpVal.ParseIntoArray(SplittedValues, TEXT(","), true);
     for (const auto& Value : SplittedValues)
     {
-        OutVector.Add(FCString::Atof(*Value));
+    	FString TrimValue = Value.Replace(TEXT("/n"), TEXT(""))
+    							 .Replace(TEXT("("), TEXT(""))
+    							 .Replace(TEXT(")"), TEXT(""))
+    							 .TrimStartAndEnd();
+    	
+        OutVector.Add(FCString::Atof(*TrimValue));
     }
 }

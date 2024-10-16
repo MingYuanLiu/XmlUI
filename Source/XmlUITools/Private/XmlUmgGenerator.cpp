@@ -107,51 +107,19 @@ UWidgetTree* UXmlUmgGenerator::GenerateWidgetTree(UUserWidget* Outer, UXmlUmgTre
 				{
 					FXmlAttribute* Attr = Node->Properties.Find(PropertyName);
 					void* Value = Property->ContainerPtrToValuePtr<uint8>(Widget);
-					// todo: set value
+					if (XmlUITools::IPropertySetter* Setter = XmlUITools::FSetterFactory::CreateSetter(Property, Attr->Type))
+                    {
+						FString FailedResult;
+                        if (!Setter->SetValue(Widget, PropertyName, Attr, WidgetClass.Get(), Value, &FailedResult))
+                        {
+	                        UE_LOG(LogXmlUmg, Error, TEXT("Failed to set property %s of widget %s, error: %s"), *PropertyName, *Node->WidgetName, *FailedResult)
+                        }
+                    }
 				}
             }
-
-			// todo: setup attributes
-			/*
-			for (const TPair<FString/* property name #1#, FString/* property value #1#>& Attr : Node->Properties)
-			{
-				const FString& Name = Attr.Key;
-				FString Value = Attr.Value.TrimStartAndEnd();
-
-				FName PropertyName = FName(*FStringUtils::ConvertLowercaseLineFormatNameToCamelFormat(Name));
-				if (FProperty* Property = WidgetClass.Get()->FindPropertyByName(PropertyName))
-				{
-					
-					if (XmlUITools::IPropertySetter* Setter = XmlUITools::FSetterFactory::CreateSetter(Property, Value))
-					{
-						if (!Setter->SetValue(Widget, Value))
-						{
-							UE_LOG(LogXmlUmg, Warning, TEXT("Set attribute %s failed"), *Name)
-						}
-						
-						delete Setter;
-					}
-
-					FObjectProperty* ObjectProperty = Cast<FObjectProperty>(Property);
-					TArray<FField*> Fields;
-					ObjectProperty->GetInnerFields(Fields);
-					for (FField* Field : Fields)
-					{
-						
-					}
-
-					
-				} 
-			}
-			*/
-
-			// todo: setup extra attributes
-			// maybe hard !!!
-			// 需要循环遍历extra attributes中的extra attribute，以设置嵌套的属性值
-			
 			
 			// todo: setup display text
-			
+			Widget->SetDisplayLabel(Node->WidgetDisplayText);
 			
 			return Widget;
 		}
@@ -256,8 +224,7 @@ void UXmlUmgGenerator::BuildAllWidgetClassList(const UClass* ActiveCurrentClass)
 		}
 	}
 
-	// traverse all blueprint widget classes
-
+	// todo: traverse all blueprint widget classes
 	
 }
 

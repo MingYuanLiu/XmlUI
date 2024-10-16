@@ -23,4 +23,11 @@ namespace XmlUITools
 		return true;
 	}
 
+	bool FObjectSetter::SetValue(void* Container, const FString& PropertyName, const FXmlAttribute* XmlAttribute, UClass* ContainerClass, void* PropertyValue, FString* OutFailureReason)
+	{
+
+		
+		return true;
+	}
+
 }
