@@ -3,10 +3,10 @@
 
 namespace XmlUITools
 {
-	class StructSetter : public IPropertySetter
+	class FStructSetter : public IPropertySetter
 	{
 	public:
-		explicit StructSetter(FProperty* Property) : IPropertySetter(Property) {}
+		explicit FStructSetter(FProperty* Property) : IPropertySetter(Property) {}
 
 		virtual bool SetValue(void* Container, const FString& PropertyName, const FXmlAttribute* XmlAttribute, UClass* ContainerClass, void* PropertyValue, FString* OutFailureReason) override;
 

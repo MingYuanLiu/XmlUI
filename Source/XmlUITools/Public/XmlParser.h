@@ -26,7 +26,7 @@ public:
 	UFUNCTION(BlueprintCallable, Category="XmlUmg")
 	bool SerializeToXml(UXmlUmgTree* UmgTree);
 
-	UPROPERTY()
+	UPROPERTY(BlueprintType)
 	FString XmlFilePath;
 
 protected:

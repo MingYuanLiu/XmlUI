@@ -7,6 +7,7 @@
 #include "NumberSetter.h"
 #include "StringSetter.h"
 #include "ObjectSetter.h"
+#include "StructSetter.h"
 #include "VectorSetter.h"
 
 namespace XmlUITools
@@ -52,20 +53,19 @@ namespace XmlUITools
 			return new FStringSetter(Property);
 		}
 		
-		/*
 		if (FStructProperty* StructProperty = CastField<FStructProperty>(Property))
         {
-            if (Type == EXmlAttributeType::Object)
-                return new FObjectSetter(Property);
+			return new FStructSetter(Property);
         }
 
 		if (FObjectProperty* ObjectProperty = CastField<FObjectProperty>(Property))
         {
-            if (Type == EXmlAttributeType::Object)
-                return new FObjectSetter(Property);
+			return new FObjectSetter(Property);
         }
 
+		// FByteProperty
 
+		/*
 		if (FSetProperty* SetProperty = CastField<FSetProperty>(Property))
 		{
 			if (Type == EXmlAttributeType::Array)

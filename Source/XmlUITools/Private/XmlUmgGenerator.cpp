@@ -114,6 +114,8 @@ UWidgetTree* UXmlUmgGenerator::GenerateWidgetTree(UUserWidget* Outer, UXmlUmgTre
                         {
 	                        UE_LOG(LogXmlUmg, Error, TEXT("Failed to set property %s of widget %s, error: %s"), *PropertyName, *Node->WidgetName, *FailedResult)
                         }
+
+						delete Setter;
                     }
 				}
             }

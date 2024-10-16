@@ -13,7 +13,7 @@ tinyxml2::XMLDocument* UXmlParser::OpenXmlFile() const
 	tinyxml2::XMLDocument* XmlDoc = new tinyxml2::XMLDocument();
 	if (XmlDoc->LoadFile(TCHAR_TO_UTF8(*XmlFilePath)) != tinyxml2::XML_SUCCESS)
 	{
-		UE_LOG(LogXmlUmg, Warning, TEXT("Load xml file failed"))
+		UE_LOG(LogXmlUmg, Error, TEXT("Load xml file failed"))
 	}
 	
 	return XmlDoc;
@@ -68,11 +68,18 @@ UXmlUmgTree* UXmlParser::ParseFromXml(FString& Out_FailureReason)
 	}
 	
 	auto XmlDoc = OpenXmlFile();
+	if (XmlDoc && XmlDoc->Error())
+	{
+		UE_LOG(LogXmlUmg, Error, TEXT("Can not open xml file %s, error %s"), *XmlFilePath, *FString(UTF8_TO_TCHAR(XmlDoc->ErrorStr())))
+		return nullptr;
+	}
+	
 	UXmlUmgTree* ParsedTree = NewObject<UXmlUmgTree>();
 
 	tinyxml2::XMLElement* StartElement = XmlDoc->RootElement();
 	if (StartElement == nullptr)
 	{
+		UE_LOG(LogXmlUmg, Error, TEXT("Xml file format is error, can not find root element"))
 		return nullptr;
 	}
 	

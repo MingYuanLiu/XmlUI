@@ -41,7 +41,7 @@ void FXmlUIToolsModule::StartupModule()
 	};
 
 	TestTinyXml();*/
-	auto ModuleDirectory = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectPluginsDir(), "XmlUI"));
+	auto ModuleDirectory = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectPluginsDir(), "XmlUITools"));
 	auto XMLResourceDir = FPaths::Combine(ModuleDirectory, "Resources", "XMLTestSources");
 	auto XmlFile = FPaths::Combine(XMLResourceDir, "parse_test.xml");
 	UXmlParser* Parser = NewObject<UXmlParser>();
@@ -53,11 +53,11 @@ void FXmlUIToolsModule::StartupModule()
 
 	/*
 	Parser->SerializeTo(Tree);
-
+	*/
 	UXmlUmgGenerator* Generator = NewObject<UXmlUmgGenerator>();
 	Generator->BuildAllWidgetClassList(nullptr);
 	UUserWidget* UserWidget = NewObject<UUserWidget>();
-	UWidgetTree* WidgetTree = Generator->GenerateWidgetTree(UserWidget, Tree);*/
+	UWidgetTree* WidgetTree = Generator->GenerateWidgetTree(UserWidget, Tree);
 }
 
 void FXmlUIToolsModule::ShutdownModule()

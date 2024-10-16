@@ -6,7 +6,7 @@
 
 namespace XmlUITools
 {
-	bool StructSetter::SetValue(void* Container, const FString& PropertyName, const FXmlAttribute* XmlAttribute, UClass* ContainerClass, void* PropertyValue, FString* OutFailureReason)
+	bool FStructSetter::SetValue(void* Container, const FString& PropertyName, const FXmlAttribute* XmlAttribute, UClass* ContainerClass, void* PropertyValue, FString* OutFailureReason)
 	{
 		if (!Container)
 		{
@@ -43,24 +43,24 @@ namespace XmlUITools
 				for (TFieldIterator<FProperty> PropertyIter(StructProperty->Struct); PropertyIter; ++PropertyIter)
 				{
 					
-					FProperty* Property = *PropertyIter;
-					FString PropName = StructProperty->Struct->GetAuthoredNameForField(Property);
+					FProperty* SubProperty = *PropertyIter;
+					FString PropName = StructProperty->Struct->GetAuthoredNameForField(SubProperty);
 
 					if (FXmlAttribute* const* ChildAttributePtr = ChildAttributes.Find(PropName))
 					{
 						FXmlAttribute* ChildAttribute = *ChildAttributePtr;
-						if (IPropertySetter* Setter = FSetterFactory::CreateSetter(Property, ChildAttribute->Type))
+						if (IPropertySetter* Setter = FSetterFactory::CreateSetter(SubProperty, ChildAttribute->Type))
 						{
-							void* OutValue = Property->ContainerPtrToValuePtr<uint8>(PropertyValue);
+							void* OutValue = SubProperty->ContainerPtrToValuePtr<uint8>(PropertyValue);
 							if (!Setter->SetValue(Container, PropName, ChildAttribute, ContainerClass, OutValue, OutFailureReason))
                             {
 								if (OutFailureReason)
                                 {
                                     *OutFailureReason = FString::Printf(TEXT("Failed to set value for struct property %s "), *PropName);
                                 }
-
-								return false;
                             }
+
+							delete Setter;
 						}
 					}
 					else
@@ -248,12 +248,19 @@ namespace XmlUITools
 					}
 				}
             }
+
+			return true;
+		}
+
+		if (OutFailureReason)
+		{
+			*OutFailureReason = FString::Printf(TEXT("Can not cast to struct property, can not set to struct value"));
 		}
 		
-		return true;
+		return false;
 	}
 
-	bool StructSetter::SetValue(void* Container, const FString& Value)
+	bool FStructSetter::SetValue(void* Container, const FString& Value)
 	{
 		return true;
 	}
