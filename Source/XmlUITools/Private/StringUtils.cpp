@@ -89,9 +89,8 @@ EXmlAttributeType FStringUtils::GetAttributeTypeFromXmlValue(const FString& Valu
 		return EXmlAttributeType::Array;
 	}
 
-	bool bIsIntVector = std::regex_match(TCHAR_TO_UTF8(*Value), std::regex("^\\(\\d+(,\\d+)+\\)$"));
-	bool bIsFloatVector = std::regex_match(TCHAR_TO_UTF8(*Value), std::regex("^\\(\\d+\\.\\d+(,\\d+\\.\\d+)+\\)$"));
-    if (bIsIntVector || bIsFloatVector)
+	bool bIsNumberVector = std::regex_match(TCHAR_TO_UTF8(*Value), std::regex("^\\(\\s*\\d+(\\.\\d+)?(?:\\s*,\\s*\\d+(\\.\\d+)?)*\\s*\\)$"));
+    if (bIsNumberVector)
     {
         return EXmlAttributeType::Vector;
     }

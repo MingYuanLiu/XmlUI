@@ -13,8 +13,14 @@
                             UI_Image
                         </ResourceName>
                         <UVRegion>
-                            (1,1)
+                            (0, 0, 1, 1)
                         </UVRegion>
+                        <DrawAs>
+                            Border
+                        </DrawAs>
+                        <Tiling>
+                            Horizontal
+                        </Tiling>
                     </Normal>
                     <NormalPadding>
                         <Left>0</Left>
@@ -31,12 +37,16 @@
                 </WidgetStyle>
                 <ColorAndOpacity>
                     <!-- Supported formats are: RGB, RRGGBB, RRGGBBAA, #RGB, #RRGGBB, #RRGGBBAA -->
-                    FFF
+                    0F020A
                 </ColorAndOpacity>
                 
             </XmlProperties>
             
-            <TextBlock> hello world </TextBlock>
+            <TextBlock>
+                <Text>
+                    hello\ world
+                </Text>
+            </TextBlock>
 			
         </Button>
     </Border>

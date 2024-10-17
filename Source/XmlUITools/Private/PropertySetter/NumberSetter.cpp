@@ -1,6 +1,7 @@
 ﻿#include "NumberSetter.h"
 
 #include "LogXmlUmg.h"
+#include "StringUtils.h"
 
 namespace XmlUITools
 {
@@ -100,6 +101,35 @@ namespace XmlUITools
 			}
 
 			return true;
+		}
+		else if (FIntProperty* IntProperty = CastField<FIntProperty>(Property))
+		{
+			FString AttributeValue = XmlAttribute->Attributes[PropertyName];
+			AttributeValue = FStringUtils::ReplaceEnterLineAndTrimStart(AttributeValue);
+			int32 IntVal = FCString::Atoi(*AttributeValue);
+			IntProperty->SetPropertyValue(PropertyValue, IntVal);
+		}
+		else if (FFloatProperty* FloatProperty = CastField<FFloatProperty>(Property))
+		{
+			FString AttributeValue = XmlAttribute->Attributes[PropertyName];
+			AttributeValue = FStringUtils::ReplaceEnterLineAndTrimStart(AttributeValue);
+			float FloatVal = FCString::Atof(*AttributeValue);
+			FloatProperty->SetPropertyValue(PropertyValue, FloatVal);
+		}
+		else if (FDoubleProperty* DoubleProperty = CastField<FDoubleProperty>(Property))
+		{
+			FString AttributeValue = XmlAttribute->Attributes[PropertyName];
+			AttributeValue = FStringUtils::ReplaceEnterLineAndTrimStart(AttributeValue);
+			double DoubleVal = FCString::Atod(*AttributeValue);
+			DoubleProperty->SetPropertyValue(PropertyValue, DoubleVal);
+		}
+		else 
+		{
+			FString AttributeValue = XmlAttribute->Attributes[PropertyName];
+			AttributeValue = FStringUtils::ReplaceEnterLineAndTrimStart(AttributeValue);
+			UE_LOG(LogXmlUmg, Warning, TEXT("Not match int and float property, default set int value to container"))
+			int32 Val = FCString::Atoi(*AttributeValue);
+			Property->SetValue_InContainer(Container, &Val);
 		}
 
 		if (OutFailureReason)

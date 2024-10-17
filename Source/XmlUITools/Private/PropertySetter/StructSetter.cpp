@@ -130,6 +130,14 @@ namespace XmlUITools
                     BoxProperty.Max.Y = Vector.Num() > 4 ? Vector[4] : 0.0f;
                     BoxProperty.Max.Z = Vector.Num() > 5 ? Vector[5] : 0.0f;
 				}
+				else if (StructProperty->Struct->GetFName() == NAME_Box2f)
+				{
+					FBox2f& BoxProperty = *static_cast<FBox2f*>(PropertyValue);
+					BoxProperty.Min.X = Vector.Num() > 0 ? Vector[0] : 0.0f;
+					BoxProperty.Min.Y = Vector.Num() > 1 ? Vector[1] : 0.0f;
+					BoxProperty.Max.X = Vector.Num() > 2 ? Vector[2] : 0.0f;
+					BoxProperty.Max.Y = Vector.Num() > 3 ? Vector[3] : 0.0f;
+				}
 				else if (StructProperty->Struct->GetFName() == NAME_Plane)
                 {
                     FPlane& PlaneProperty = *static_cast<FPlane*>(PropertyValue);
@@ -167,6 +175,22 @@ namespace XmlUITools
                     RayProperty.Direction.X = Vector.Num() > 3 ? Vector[3] : 0.0f;
                     RayProperty.Direction.Y = Vector.Num() > 4 ? Vector[4] : 0.0f;
                     RayProperty.Direction.Z = Vector.Num() > 5 ? Vector[5] : 0.0f;
+				}
+				else if (StructProperty->Struct->GetFName() == NAME_Color)
+                {
+					FColor& ColorProperty = *static_cast<FColor*>(PropertyValue);
+					ColorProperty.R = Vector.Num() > 0 ? static_cast<uint8>(Vector[0]) : 0;
+                    ColorProperty.G = Vector.Num() > 1 ? static_cast<uint8>(Vector[1]) : 0;
+                    ColorProperty.B = Vector.Num() > 2 ? static_cast<uint8>(Vector[2]) : 0;
+                    ColorProperty.A = Vector.Num() > 3 ? static_cast<uint8>(Vector[3]) : 0;
+                }
+				else if (StructProperty->Struct->GetFName() == NAME_LinearColor)
+				{
+					FLinearColor& ColorProperty = *static_cast<FLinearColor*>(PropertyValue);
+					ColorProperty.R = Vector.Num() > 0 ? static_cast<uint8>(Vector[0]) : 0;
+					ColorProperty.G = Vector.Num() > 1 ? static_cast<uint8>(Vector[1]) : 0;
+					ColorProperty.B = Vector.Num() > 2 ? static_cast<uint8>(Vector[2]) : 0;
+					ColorProperty.A = Vector.Num() > 3 ? static_cast<uint8>(Vector[3]) : 0;
 				}
 			}
 			else if (XmlAttribute->Type == EXmlAttributeType::String)

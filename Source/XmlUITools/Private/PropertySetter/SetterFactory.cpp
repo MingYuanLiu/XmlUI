@@ -20,51 +20,45 @@ namespace XmlUITools
 				return new FEnumSetter(Property, EnumProperty->GetEnum());
         }
 
-		if (FBoolProperty* BoolProperty = CastField<FBoolProperty>(Property))
+		if (Property->IsA<FBoolProperty>())
         {
             if (Type == EXmlAttributeType::Bool)
                 return new FBoolSetter(Property);
         }
 
-		if (FNumericProperty* NumericProperty = CastField<FIntProperty>(Property))
+		if (Property->IsA<FNumericProperty>())
         {
-            if (Type == EXmlAttributeType::Number)
-                return new FNumberSetter(Property);
+			return new FNumberSetter(Property);
         }
 		
-		if (FArrayProperty* ArrayProperty = CastField<FArrayProperty>(Property))
+		if (Property->IsA<FArrayProperty>())
 		{
-			if (Type == EXmlAttributeType::Array)
-				return new FArraySetter(Property);
+			return new FArraySetter(Property);
 		}
 		
-		if (FStrProperty *StringProperty = CastField<FStrProperty>(Property))
+		if (Property->IsA<FStrProperty>()
+			|| Property->IsA<FNameProperty>()
+			|| Property->IsA<FTextProperty>())
 		{
 			return new FStringSetter(Property);
 		}
 		
-		if (FTextProperty* TextProperty = CastField<FTextProperty>(Property))
-		{
-			return new FStringSetter(Property);
-		}
-
-		if (FNameProperty* NameProperty = CastField<FNameProperty>(Property))
-		{
-			return new FStringSetter(Property);
-		}
-		
-		if (FStructProperty* StructProperty = CastField<FStructProperty>(Property))
+		if (Property->IsA<FStructProperty>())
         {
 			return new FStructSetter(Property);
         }
 
-		if (FObjectProperty* ObjectProperty = CastField<FObjectProperty>(Property))
+		if (Property->IsA<FObjectProperty>())
         {
 			return new FObjectSetter(Property);
         }
 
-		// FByteProperty
+		// todo: unimplemented property
+		// FMapProperty
+		// FSetProperty
+		// FDelegateProperty
 
+		
 		/*
 		if (FSetProperty* SetProperty = CastField<FSetProperty>(Property))
 		{

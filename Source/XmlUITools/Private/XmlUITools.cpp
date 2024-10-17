@@ -41,7 +41,7 @@ void FXmlUIToolsModule::StartupModule()
 	};
 
 	TestTinyXml();*/
-	auto ModuleDirectory = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectPluginsDir(), "XmlUITools"));
+	auto ModuleDirectory = FPaths::ConvertRelativePathToFull(FPaths::Combine(FPaths::ProjectPluginsDir(), "XmlUI"));
 	auto XMLResourceDir = FPaths::Combine(ModuleDirectory, "Resources", "XMLTestSources");
 	auto XmlFile = FPaths::Combine(XMLResourceDir, "parse_test.xml");
 	UXmlParser* Parser = NewObject<UXmlParser>();
